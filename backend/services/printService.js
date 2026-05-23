@@ -1,5 +1,25 @@
 import net from 'net';
 
+const PRINTABLE_WIDTH_DOTS = 384;
+const QR_PAPER_WIDTH_RATIO = 0.72;
+const QR_MODULE_SIZE_MIN = 4;
+const QR_MODULE_SIZE_MAX = 16;
+
+function estimateQrModuleCount(data) {
+  if (data.length <= 32) return 29;
+  if (data.length <= 53) return 33;
+  if (data.length <= 78) return 37;
+  if (data.length <= 106) return 41;
+  return 45;
+}
+
+function getQrModuleSizeForPaper(data) {
+  const targetDots = Math.floor(PRINTABLE_WIDTH_DOTS * QR_PAPER_WIDTH_RATIO);
+  const moduleCount = estimateQrModuleCount(data);
+  const moduleSize = Math.floor(targetDots / moduleCount);
+  return Math.max(QR_MODULE_SIZE_MIN, Math.min(QR_MODULE_SIZE_MAX, moduleSize));
+}
+
 /**
  * Generates an ESC/POS binary stream for printing a visitor badge on a 58mm thermal receipt printer.
  * @param {Object} visitor Visitor details 
@@ -22,6 +42,7 @@ export function generateEscPosBuffer(visitor, qrUrl) {
   // Standard ESC/POS QR Code printing (GS ( k commands)
   const qrData = Buffer.from(qrUrl, 'utf-8');
   const dataLen = qrData.length;
+  const qrModuleSize = getQrModuleSizeForPaper(qrUrl);
   
   // pL and pH specify the length of data block (dataLen + 3)
   const pL = (dataLen + 3) & 0xff;
@@ -30,9 +51,8 @@ export function generateEscPosBuffer(visitor, qrUrl) {
   // Set Model: Model 2 (0x1D 0x28 0x6B 0x04 0x00 0x31 0x41 0x32 0x00)
   chunks.push(Buffer.from([0x1d, 0x28, 0x6b, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00]));
 
-  // Set Module Size: 9 (0x1D 0x28 0x6B 0x03 0x00 0x31 0x43 0x09)
-  // Module size 9 produces around a 37mm sized QR code at 203 DPI to match the 50mm height.
-  chunks.push(Buffer.from([0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x09]));
+  // Set module size from a paper-width target with margin, then keep centered.
+  chunks.push(Buffer.from([0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, qrModuleSize]));
 
   // Set Error Correction Level: M = 49 (0x1D 0x28 0x6B 0x03 0x00 0x31 0x44 0x31)
   chunks.push(Buffer.from([0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x44, 0x31]));

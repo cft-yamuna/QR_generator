@@ -36,8 +36,10 @@ export default function VisitorCard({ visitor, networkInfo, onBack, onPrintSucce
       setPrintStatus('printing');
       setPrintError('');
       try {
-        window.Android.printQR(qrUrl);
-        window.Android.cutPaper();
+        // Single atomic call: prints QR + cuts paper in one locked AIDL sequence.
+        // Previously calling printQR() then cutPaper() as two separate bridge calls
+        // caused a race condition that made the QR drift lower on every successive print.
+        window.Android.printQRAndCut(qrUrl);
         
         setPrintStatus('success');
         setTimeout(() => { if (onPrintSuccess) onPrintSuccess(); }, 1500);
