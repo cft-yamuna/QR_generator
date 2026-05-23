@@ -8,6 +8,9 @@ export default function Scanner({ visitorId, onBack }) {
   const [countdown, setCountdown] = useState(10);
   const [cameras, setCameras] = useState([]);
   const [activeCameraId, setActiveCameraId] = useState(null);
+  const [activeFacingMode, setActiveFacingMode] = useState('environment');
+  const [scannerRestartKey, setScannerRestartKey] = useState(0);
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const scannerRef = useRef(null);
 
   const updateCameraList = async () => {
@@ -57,13 +60,28 @@ export default function Scanner({ visitorId, onBack }) {
   }, [visitorId]);
 
   const handleSwitchCamera = async () => {
-    if (cameras.length <= 1) return;
-    const currentIndex = cameras.findIndex(cam => cam.id === activeCameraId);
-    const nextIndex = (currentIndex + 1) % cameras.length;
-    const nextCamera = cameras[nextIndex];
-    if (nextCamera) {
-      console.log(`Switching active camera to: ${nextCamera.label || nextCamera.id}`);
-      setActiveCameraId(nextCamera.id);
+    if (isSwitchingCamera) return;
+
+    const nextFacingMode = activeFacingMode === 'environment' ? 'user' : 'environment';
+    console.log(`Switching camera facing mode to: ${nextFacingMode}`);
+    setIsSwitchingCamera(true);
+
+    try {
+      const scanner = scannerRef.current;
+      if (scanner) {
+        if (scanner.isScanning) {
+          await scanner.stop();
+        }
+        await scanner.clear();
+      }
+    } catch (err) {
+      console.warn("Could not stop camera before switching:", err);
+    } finally {
+      scannerRef.current = null;
+      setActiveCameraId(null);
+      setActiveFacingMode(nextFacingMode);
+      setScannerRestartKey((key) => key + 1);
+      setTimeout(() => setIsSwitchingCamera(false), 700);
     }
   };
 
@@ -74,9 +92,15 @@ export default function Scanner({ visitorId, onBack }) {
     if (state !== 'scan') {
       // Clean up scanner if we transition out of scan state
       if (scannerRef.current) {
-        if (scannerRef.current.isScanning) {
-          scannerRef.current.stop().catch(err => console.error("Error stopping scanner:", err));
-        }
+        const scanner = scannerRef.current;
+        Promise.resolve()
+          .then(async () => {
+            if (scanner.isScanning) {
+              await scanner.stop();
+            }
+            await scanner.clear();
+          })
+          .catch(err => console.error("Error stopping scanner:", err));
         scannerRef.current = null;
       }
       return;
@@ -127,14 +151,9 @@ export default function Scanner({ visitorId, onBack }) {
         const config = {
           fps: 15,
           qrbox: (width, height) => {
-            // Viewfinder is 85% of the smallest viewport dimension
-            const size = Math.min(width, height) * 0.85;
+            // Keep the detection area aligned with the large visible viewfinder.
+            const size = Math.min(width, height) * 0.92;
             return { width: size, height: size };
-          },
-          videoConstraints: {
-            width: { min: 1280, ideal: 1920 },
-            height: { min: 720, ideal: 1080 },
-            aspectRatio: { ideal: 1.7777777778 }
           }
         };
 
@@ -168,8 +187,10 @@ export default function Scanner({ visitorId, onBack }) {
         // Determine which camera to use
         let selectedCameraId = activeCameraId;
 
-        // If no camera ID is set but we have cameras in list, select one
-        if (!selectedCameraId && list && list.length > 0) {
+        // If no camera ID is set on desktop, choose a sensible default from the list.
+        // On mobile, facingMode below gives a more reliable front/back switch.
+        const prefersFacingMode = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!selectedCameraId && !prefersFacingMode && list && list.length > 0) {
           const backCamera = list.find(cam => {
             const label = cam.label.toLowerCase();
             return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('facing 1') || label.includes('camera 2');
@@ -193,13 +214,13 @@ export default function Scanner({ visitorId, onBack }) {
             setActiveCameraId(backCamera ? backCamera.id : refreshedList[0].id);
           }
         } else {
-          // No listed cameras yet (or permission not yet granted): attempt facingMode fallback
-          console.log("No camera list returned, attempting facingMode: environment");
+          // Mobile browsers switch front/back more reliably with facingMode than device IDs.
+          console.log(`Starting camera facingMode: ${activeFacingMode}`);
           try {
-            await html5QrCode.start({ facingMode: "environment" }, config, successCallback, () => {});
+            await html5QrCode.start({ facingMode: { exact: activeFacingMode } }, config, successCallback, () => {});
             await applyCameraZoom();
             const refreshedList = await updateCameraList();
-            if (refreshedList && refreshedList.length > 0) {
+            if (!prefersFacingMode && refreshedList && refreshedList.length > 0) {
               const backCamera = refreshedList.find(cam => {
                 const label = cam.label.toLowerCase();
                 return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('facing 1') || label.includes('camera 2');
@@ -207,11 +228,13 @@ export default function Scanner({ visitorId, onBack }) {
               setActiveCameraId(backCamera ? backCamera.id : refreshedList[0].id);
             }
           } catch (envErr) {
-            console.warn("facingMode: environment failed, falling back to facingMode: user", envErr);
-            await html5QrCode.start({ facingMode: "user" }, config, successCallback, () => {});
+            const fallbackFacingMode = activeFacingMode === 'environment' ? 'user' : 'environment';
+            console.warn(`facingMode exact ${activeFacingMode} failed, falling back to exact ${fallbackFacingMode}`, envErr);
+            await html5QrCode.start({ facingMode: { exact: fallbackFacingMode } }, config, successCallback, () => {});
+            setActiveFacingMode(fallbackFacingMode);
             await applyCameraZoom();
             const refreshedList = await updateCameraList();
-            if (refreshedList && refreshedList.length > 0) {
+            if (!prefersFacingMode && refreshedList && refreshedList.length > 0) {
               setActiveCameraId(refreshedList[0].id);
             }
           }
@@ -231,10 +254,17 @@ export default function Scanner({ visitorId, onBack }) {
     return () => {
       clearTimeout(timer);
       if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => console.error("Unmount cleanup failed:", err));
+        html5QrCode
+          .stop()
+          .then(() => html5QrCode.clear())
+          .catch(err => console.error("Unmount cleanup failed:", err));
+      } else if (html5QrCode) {
+        Promise.resolve()
+          .then(() => html5QrCode.clear())
+          .catch(err => console.error("Unmount clear failed:", err));
       }
     };
-  }, [state, activeCameraId]);
+  }, [state, activeCameraId, activeFacingMode, scannerRestartKey]);
 
   // Countdown timer for check-in detail visibility
   useEffect(() => {
@@ -281,6 +311,9 @@ export default function Scanner({ visitorId, onBack }) {
     }
     setState('scan');
   };
+
+  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const canSwitchCamera = cameras.length > 1 || isMobileDevice;
 
   return (
     <div className="scanner-fullscreen">
@@ -344,34 +377,33 @@ export default function Scanner({ visitorId, onBack }) {
           </h1>
           <p className="scanner-scan-sub">Hold the visitor's printed QR pass inside the viewfinder</p>
 
-          <div className="scanner-camera-wrapper">
-            <div id="reader"></div>
-            {/* Viewfinder Overlay Frame */}
-            <div className="scanner-viewfinder-overlay">
-              <div className="viewfinder-box">
-                <div className="corner top-left"></div>
-                <div className="corner top-right"></div>
-                <div className="corner bottom-left"></div>
-                <div className="corner bottom-right"></div>
-                <div className="scan-laser-line"></div>
-              </div>
+          <div id="reader" key={scannerRestartKey}></div>
+          {/* Viewfinder Overlay Frame */}
+          <div className="scanner-viewfinder-overlay">
+            <div className="viewfinder-box">
+              <div className="corner top-left"></div>
+              <div className="corner top-right"></div>
+              <div className="corner bottom-left"></div>
+              <div className="corner bottom-right"></div>
+              <div className="scan-laser-line"></div>
             </div>
-
-            {/* Switch Camera Button */}
-            {cameras.length > 1 && (
-              <button
-                onClick={handleSwitchCamera}
-                className="camera-switch-btn"
-                type="button"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 4v6h-6M1 20v-6h6" />
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                </svg>
-                <span>Switch Camera</span>
-              </button>
-            )}
           </div>
+
+          {/* Switch Camera Button */}
+          {canSwitchCamera && (
+            <button
+              onClick={handleSwitchCamera}
+              className="camera-switch-btn"
+              disabled={isSwitchingCamera}
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 4v6h-6M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              <span>{isSwitchingCamera ? 'Switching...' : 'Switch Camera'}</span>
+            </button>
+          )}
         </div>
       )}
 
