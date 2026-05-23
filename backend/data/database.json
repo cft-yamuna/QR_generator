@@ -1,0 +1,147 @@
+[
+  {
+    "id": "VIS-1001",
+    "name": "Nevin Thomas",
+    "employeeId": "EMP-001",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:00:00.000Z"
+  },
+  {
+    "id": "VIS-1002",
+    "name": "Priya Patel",
+    "employeeId": "EMP-002",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:01:00.000Z"
+  },
+  {
+    "id": "VIS-1003",
+    "name": "Arjun Sharma",
+    "employeeId": "EMP-003",
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-22T03:48:54.775Z",
+    "createdAt": "2026-05-21T07:02:00.000Z",
+    "gateScanned": true,
+    "gateScannedAt": "2026-05-23T12:07:46.110Z"
+  },
+  {
+    "id": "VIS-1004",
+    "name": "Rohan Mehta",
+    "employeeId": "EMP-004",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:03:00.000Z"
+  },
+  {
+    "id": "VIS-1005",
+    "name": "Ananya Iyer",
+    "employeeId": "EMP-005",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:04:00.000Z"
+  },
+  {
+    "id": "VIS-1006",
+    "name": "Rahul Nair",
+    "employeeId": "EMP-006",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:05:00.000Z"
+  },
+  {
+    "id": "VIS-1007",
+    "name": "Sneha Reddy",
+    "employeeId": "EMP-007",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:06:00.000Z"
+  },
+  {
+    "id": "VIS-1008",
+    "name": "Kiran Joshi",
+    "employeeId": "EMP-008",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:07:00.000Z"
+  },
+  {
+    "id": "VIS-1009",
+    "name": "Priya Patel",
+    "employeeId": "EMP-009",
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-22T03:45:48.823Z",
+    "createdAt": "2026-05-21T07:08:00.000Z"
+  },
+  {
+    "id": "VIS-1010",
+    "name": "Divya Menon",
+    "employeeId": "EMP-010",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-21T07:09:00.000Z"
+  },
+  {
+    "id": "VIS-1011",
+    "name": "Aarav Patel",
+    "employeeId": "EMP-012",
+    "checkinStatus": "Pending",
+    "checkedInAt": null,
+    "createdAt": "2026-05-22T03:46:00.386Z"
+  },
+  {
+    "id": "VIS-1012",
+    "name": "Meera Nair",
+    "employeeId": "EMP-013",
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-22T03:47:01.217Z",
+    "createdAt": "2026-05-22T03:47:01.219Z"
+  },
+  {
+    "id": "VIS-1013",
+    "name": "Nevin",
+    "employeeId": "11111111",
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-22T03:55:27.676Z",
+    "createdAt": "2026-05-22T03:50:59.172Z",
+    "gateScanned": true,
+    "gateScannedAt": "2026-05-23T09:40:15.289Z"
+  },
+  {
+    "id": "VIS-1014",
+    "name": "nevin roy",
+    "employeeId": "emp-01",
+    "checkinStatus": "Checked In",
+    "createdAt": "2026-05-23T09:27:00.000Z",
+    "checkedInAt": "2026-05-23T09:28:43.645Z"
+  },
+  {
+    "id": "VIS-1015",
+    "name": "nevin roy",
+    "employeeId": "emp-02",
+    "checkinStatus": "Pending",
+    "createdAt": "2026-05-23T09:27:01.000Z"
+  },
+  {
+    "id": "VIS-1016",
+    "name": "Test01",
+    "employeeId": "Emp-0001",
+    "email": "test@gmail.com",
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-23T09:29:39.903Z",
+    "createdAt": "2026-05-23T09:29:39.905Z",
+    "gateScanned": true,
+    "gateScannedAt": "2026-05-23T10:01:41.297Z"
+  },
+  {
+    "id": "VIS-1017",
+    "name": "Yamuna",
+    "employeeId": "1234",
+    "email": "yamuna@craftech360.com",
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-23T12:13:34.271Z",
+    "createdAt": "2026-05-23T12:13:34.272Z",
+    "gateScanned": true,
+    "gateScannedAt": "2026-05-23T12:14:19.018Z"
+  }
+]

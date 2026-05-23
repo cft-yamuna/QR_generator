@@ -1,0 +1,1327 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Space Grotesk', monospace;
+
+  /* Minimalist Graphite Theme */
+  --bg-main: #0B0E14;
+  --bg-surface: #121620;
+  --border-color: rgba(255, 255, 255, 0.05);
+
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --success: #10B981;
+  --danger: #EF4444;
+
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted: #4B5563;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Base Layout Containers */
+.container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 100px);
+}
+
+/* Typography */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Minimalist Card */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.ticket-card {
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* User Details Layout (Pass/Ticket Page) */
+.user-avatar {
+  width: 64px;
+  height: 64px;
+  background: rgba(79, 70, 229, 0.1);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 auto 1.5rem auto;
+}
+
+.user-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.user-meta-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.user-meta-item .label {
+  color: var(--text-secondary);
+}
+
+.user-meta-item .value {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* QR Code Container */
+.qr-box {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 2rem 0;
+}
+
+.qr-box canvas,
+.qr-box img,
+.qr-box svg,
+.qr-box div {
+  display: block;
+}
+
+/* Admin Dashboard Table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.05em;
+}
+
+.admin-table td {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.95rem;
+}
+
+.admin-row {
+  transition: background var(--transition-fast);
+}
+
+.admin-row:hover {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.checked {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.status-badge.pending {
+  background: rgba(156, 163, 175, 0.1);
+  color: var(--text-secondary);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Checkin Welcome Layout */
+.welcome-circle {
+  width: 72px;
+  height: 72px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem auto;
+}
+
+.welcome-msg {
+  font-size: 1.35rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.welcome-username {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0.25rem 0 2rem 0;
+  letter-spacing: -0.02em;
+}
+
+/* Loading & Toast Spinner */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.05);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Header link styles */
+.nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav-header a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-header a:hover {
+  color: white;
+}
+
+
+
+/* ====================================================================
+   CAMERA QR SCANNER STYLING (Premium Gate Entry Dashboard)
+   ==================================================================== */
+.scanner-container {
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
+
+.scanner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+/* Pulsing Status Lights */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.pulse-green {
+  background-color: var(--success);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 1.5s infinite;
+}
+.status-dot.pulse-orange {
+  background-color: #F59E0B;
+  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+  animation: pulse-orange 1.5s infinite;
+}
+.status-dot.pulse-gray {
+  background-color: var(--text-muted);
+}
+
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+@keyframes pulse-orange {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.scanner-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.scanner-instructions {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.scanner-instructions h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+.scanner-instructions p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Camera Viewport Wrapper */
+.scanner-camera-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background-color: #000000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* The actual HTML5 QR Code element */
+#reader {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Overlay Viewfinder */
+.scanner-viewfinder-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.viewfinder-box {
+  position: relative;
+  width: 80%;
+  height: 80%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.45);
+}
+
+/* Viewfinder Corners */
+.viewfinder-box .corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--success);
+  border-style: solid;
+  border-width: 0;
+}
+.viewfinder-box .corner.top-left { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 4px; }
+.viewfinder-box .corner.top-right { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 4px; }
+.viewfinder-box .corner.bottom-left { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 4px; }
+.viewfinder-box .corner.bottom-right { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 4px; }
+
+/* Pulsing Scanner Laser Line */
+.scan-laser-line {
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(to right, transparent, var(--success), transparent);
+  box-shadow: 0 0 8px var(--success);
+  animation: laser-bounce 2.5s ease-in-out infinite;
+}
+
+@keyframes laser-bounce {
+  0%, 100% { top: 0%; opacity: 0.3; }
+  50% { top: 100%; opacity: 1; }
+}
+
+/* Scanner Dashboard Cards (Success / Error / Loading) */
+.scanner-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  margin: 2rem auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center-col {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 250px;
+}
+
+/* Success Card Styling */
+.success-layout {
+  border-top: 5px solid var(--success);
+}
+.success-banner {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.success-icon-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--success);
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem auto;
+}
+.success-banner h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+.success-banner p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Error Card Styling */
+.error-layout {
+  border-top: 5px solid var(--danger);
+}
+.error-banner {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.error-icon-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--danger);
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem auto;
+}
+.error-banner h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+
+/* Detail Rows for Visitor Check-in Details Sheet */
+.visitor-details-sheet {
+  border: 1px solid var(--border-color);
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.95rem;
+}
+.detail-row .label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 120px;
+  text-align: left;
+}
+.detail-row .value {
+  color: var(--text-primary);
+  text-align: right;
+  word-break: break-word;
+}
+.detail-row .value.bold-text {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: white;
+}
+.detail-row .value.badge-id {
+  font-family: var(--font-mono);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.1rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+}
+.detail-row .value.highlight-time {
+  font-weight: 600;
+  color: var(--success);
+}
+.text-small {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Countdown Progress Bar */
+.countdown-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.countdown-progress-bar .progress-fill {
+  height: 100%;
+  background-color: var(--success);
+  transition: width 1s linear;
+}
+.countdown-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* ====================================================================
+   CAMERA SWITCH BUTTON & PREMIUM FULLSCREEN SUCCESS LAYOUT
+   ==================================================================== */
+.camera-switch-btn {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(18, 22, 32, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.camera-switch-btn:hover {
+  background: rgba(18, 22, 32, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-50%) scale(1.05);
+}
+
+.camera-switch-btn:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+.success-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #030813;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  overflow: hidden;
+  z-index: 9999;
+  cursor: pointer; /* make clickable to dismiss */
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Ambient lighting */
+.success-screen::before {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.03) 40%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.success-screen::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.04) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.waves-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sparkles-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.sparkle {
+  position: absolute;
+  display: block;
+  width: 3px;
+  height: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: float-sparkle 12s infinite linear;
+}
+
+/* Animation keyframes */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes float-sparkle {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(50px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.welcome-text-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 4.5rem;
+  font-weight: 400;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  z-index: 5;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  padding: 0 2rem;
+  max-width: 90%;
+  animation: slide-up-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gold-text-gradient {
+  background: linear-gradient(to right, #ffe17d 0%, #e5c060 40%, #b38827 80%, #ffd043 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-weight: 500;
+  padding: 0 0.25rem;
+}
+
+.delighted-subtitle {
+  font-family: 'Outfit', var(--font-sans), sans-serif;
+  font-size: 1.85rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.02em;
+  text-align: center;
+  z-index: 5;
+  max-width: 80%;
+  animation: slide-up-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.dismiss-hint {
+  position: absolute;
+  bottom: 2rem;
+  font-family: 'Outfit', var(--font-sans), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  z-index: 5;
+  pointer-events: none;
+  animation: pulse-opacity 2s infinite ease-in-out;
+}
+
+@keyframes slide-up-fade {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* Responsive typography for mobile devices */
+@media (max-width: 768px) {
+  .welcome-text-serif {
+    font-size: 2.5rem;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+  }
+  .delighted-subtitle {
+    font-size: 1.25rem;
+    max-width: 85%;
+  }
+}
+
+.info-paragraph {
+  font-family: 'Outfit', var(--font-sans), sans-serif;
+  font-size: 1.35rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+  text-align: center;
+  max-width: 700px;
+  margin-bottom: 2rem;
+  z-index: 5;
+  animation: slide-up-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  opacity: 0;
+}
+.info-paragraph p {
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 768px) {
+  .info-paragraph {
+    font-size: 1rem;
+    max-width: 90%;
+    padding: 0 1rem;
+  }
+}
+
+/* ====================================================================
+   FULLSCREEN SCANNER PAGE (/verify) - Premium Design
+   ==================================================================== */
+.scanner-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #030813;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Transparent status/back bar pinned to top */
+.scanner-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  z-index: 10;
+  background: rgba(3, 8, 19, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scanner-back-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.scanner-back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* Scan state layout — vertically centered column */
+.scanner-scan-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  padding-top: 4rem; /* room for the top bar */
+  gap: 0.5rem;
+}
+
+/* "Please Scan the QR Code" heading */
+.scanner-scan-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+  animation: slide-up-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scanner-scan-sub {
+  font-family: 'Outfit', var(--font-sans), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* Override the camera wrapper size for fullscreen scanner */
+.scanner-scan-layout .scanner-camera-wrapper {
+  position: relative;
+  width: 90vw;
+  max-width: 460px;
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+/* Loading / Error states inside fullscreen scanner */
+.scanner-fullscreen .scanner-card {
+  position: relative;
+  z-index: 5;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .scanner-scan-heading {
+    font-size: 2rem;
+    padding: 0 1rem;
+  }
+  .scanner-top-bar {
+    padding: 1rem 1.25rem;
+  }
+}
+
+
+.display-board {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #030813;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Ambient glows using pseudo-elements via helper divs */
+.display-glow-bl {
+  position: absolute;
+  bottom: -10%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.03) 40%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+.display-glow-tr {
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.04) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.display-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Active Guest: "Hi, Name" heading — bigger for TV */
+.display-hi-heading {
+  font-size: 6rem !important;
+  margin-bottom: 2.5rem !important;
+}
+
+/* Greeting label above the name */
+.display-greeting-label {
+  font-family: 'Outfit', var(--font-sans), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 1.5rem;
+  z-index: 5;
+  animation: slide-up-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
+  opacity: 0;
+}
+
+/* Info paragraph override for larger display board text */
+.display-info-para {
+  font-size: 1.55rem !important;
+  max-width: 860px !important;
+  line-height: 2 !important;
+}
+
+/* "Just checked in" badge */
+.display-badge-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-family: 'Outfit', var(--font-sans), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(16, 185, 129, 0.9);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: slide-up-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+  opacity: 0;
+  z-index: 5;
+}
+.display-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 1.5s infinite;
+}
+
+/* Standby Mode */
+.display-standby-icon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: rgba(212, 175, 55, 0.6);
+  animation: pulse-opacity 3s infinite ease-in-out;
+  z-index: 5;
+}
+.display-standby-heading {
+  font-size: 5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+.display-standby-sub {
+  font-size: 1.5rem !important;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1024px) {
+  .display-hi-heading { font-size: 4rem !important; }
+  .display-info-para { font-size: 1.2rem !important; max-width: 680px !important; }
+  .display-standby-heading { font-size: 3.5rem !important; }
+}
+@media (max-width: 768px) {
+  .display-hi-heading { font-size: 2.8rem !important; }
+  .display-info-para { font-size: 1rem !important; max-width: 90% !important; padding: 0 1rem; }
+  .display-standby-heading { font-size: 2.25rem !important; }
+  .display-greeting-label { font-size: 0.85rem; }
+}
+
+/* ====================================================================
+   REGISTRATION & CHECK-IN PAGES - Premium Glassmorphic Design
+   ==================================================================== */
+.reg-page {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #030813;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  color: #ffffff;
+  overflow-y: auto;
+  z-index: 1;
+  padding: 3rem 1rem 4rem 1rem;
+  gap: 2.5rem;
+}
+
+.reg-card {
+  background-color: rgba(18, 22, 32, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  z-index: 5;
+  animation: slide-up-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.reg-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.reg-logo {
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  animation: pulse-opacity 2s infinite ease-in-out;
+}
+
+.reg-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+}
+
+.reg-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 300;
+}
+
+.reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reg-field--slide {
+  animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.reg-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.reg-duplicate-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #F59E0B;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.reg-duplicate-icon {
+  font-size: 1.1rem;
+}
+
+.reg-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.reg-success {
+  color: var(--success);
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.reg-btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.reg-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+}
+
+.reg-btn:active {
+  transform: translateY(1px);
+}
+
+.reg-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reg-btn--gold {
+  background: linear-gradient(135deg, #FFE17D 0%, #E5C060 50%, #B38827 100%);
+  color: #030813;
+  box-shadow: 0 4px 12px rgba(229, 192, 96, 0.2);
+}
+
+.reg-btn--gold:hover {
+  background: linear-gradient(135deg, #FFE896 0%, #ECCB76 50%, #C49835 100%);
+  box-shadow: 0 6px 16px rgba(229, 192, 96, 0.3);
+}
+
+.reg-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.reg-btn--gold .reg-btn-spinner {
+  border: 2px solid rgba(3, 8, 19, 0.3);
+  border-top-color: #030813;
+}
+
+.reg-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 1rem;
+  line-height: 1.4;
+}
+
+.reg-admin-link {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  padding: 0.5rem 1.2rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.reg-admin-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 480px) {
+  .reg-card {
+    padding: 2rem 1.5rem;
+  }
+}
