@@ -85,6 +85,33 @@ export default function Scanner({ visitorId, onBack }) {
     const html5QrCode = new Html5Qrcode("reader");
     scannerRef.current = html5QrCode;
 
+    const applyCameraZoom = async () => {
+      try {
+        const videoElement = document.querySelector('#reader video');
+        if (videoElement && videoElement.srcObject) {
+          const stream = videoElement.srcObject;
+          const tracks = stream.getVideoTracks();
+          if (tracks && tracks.length > 0) {
+            const track = tracks[0];
+            const capabilities = track.getCapabilities();
+            console.log("Camera capabilities:", capabilities);
+            if (capabilities.zoom) {
+              const minZoom = capabilities.zoom.min || 1;
+              const maxZoom = capabilities.zoom.max || 1;
+              // Double scale camera zoom: target 2.0x
+              const targetZoom = Math.min(2.0, maxZoom);
+              console.log(`Setting zoom to: ${targetZoom} (min: ${minZoom}, max: ${maxZoom})`);
+              await track.applyConstraints({
+                advanced: [{ zoom: targetZoom }]
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not apply camera zoom:", err);
+      }
+    };
+
     const startCamera = async () => {
       // 1. Check if the app is run in an insecure context (HTTP on non-localhost), which blocks camera APIs on mobile
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -98,11 +125,16 @@ export default function Scanner({ visitorId, onBack }) {
         const list = await updateCameraList();
 
         const config = {
-          fps: 10,
+          fps: 15,
           qrbox: (width, height) => {
-            // Viewfinder is 80% of the smallest viewport dimension
-            const size = Math.min(width, height) * 0.80;
+            // Viewfinder is 85% of the smallest viewport dimension
+            const size = Math.min(width, height) * 0.85;
             return { width: size, height: size };
+          },
+          videoConstraints: {
+            width: { min: 1280, ideal: 1920 },
+            height: { min: 720, ideal: 1080 },
+            aspectRatio: { ideal: 1.7777777778 }
           }
         };
 
@@ -150,6 +182,7 @@ export default function Scanner({ visitorId, onBack }) {
         if (selectedCameraId) {
           console.log(`Starting camera ID: ${selectedCameraId}`);
           await html5QrCode.start(selectedCameraId, config, successCallback, () => {});
+          await applyCameraZoom();
           // Query camera list again now that permission is granted, so we get labels and all available cameras
           const refreshedList = await updateCameraList();
           if (refreshedList && refreshedList.length > 0 && !activeCameraId) {
@@ -164,6 +197,7 @@ export default function Scanner({ visitorId, onBack }) {
           console.log("No camera list returned, attempting facingMode: environment");
           try {
             await html5QrCode.start({ facingMode: "environment" }, config, successCallback, () => {});
+            await applyCameraZoom();
             const refreshedList = await updateCameraList();
             if (refreshedList && refreshedList.length > 0) {
               const backCamera = refreshedList.find(cam => {
@@ -175,6 +209,7 @@ export default function Scanner({ visitorId, onBack }) {
           } catch (envErr) {
             console.warn("facingMode: environment failed, falling back to facingMode: user", envErr);
             await html5QrCode.start({ facingMode: "user" }, config, successCallback, () => {});
+            await applyCameraZoom();
             const refreshedList = await updateCameraList();
             if (refreshedList && refreshedList.length > 0) {
               setActiveCameraId(refreshedList[0].id);

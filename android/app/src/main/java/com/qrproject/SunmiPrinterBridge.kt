@@ -45,8 +45,8 @@ class SunmiPrinterBridge(
             Log.d(TAG, "Printing QR: $qrData")
             // Align center (1) for QR code
             printerService.setAlignment(1, null)
-            // Print QR code: data, modulesize (4 = range 1-12, half of 8), errorlevel (2 = Q), callback
-            printerService.printQRCode(qrData, 4, 2, null)
+            // Print QR code: data, modulesize (8 = range 4-16), errorlevel (2 = Q), callback
+            printerService.printQRCode(qrData, 8, 2, null)
             // Feed a line after the QR code to separate it
             printerService.printText("\n", null)
         } catch (e: Exception) {
