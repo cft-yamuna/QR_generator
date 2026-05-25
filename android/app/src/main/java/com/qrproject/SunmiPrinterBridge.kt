@@ -2,102 +2,235 @@ package com.qrproject
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import android.widget.Toast
 import com.sunmi.peripheral.printer.SunmiPrinterService
+import java.io.ByteArrayOutputStream
 
+/**
+ * JavaScript ↔ Sunmi printer bridge.
+ *
+ * PRINT METHOD STRATEGY — tries three methods in order until one succeeds:
+ *   1. sendRAWData()      — raw ESC/POS GS v 0 raster (most universal)
+ *   2. printBitmapCustom()— Sunmi SDK v1 bitmap API  (mid-era firmware)
+ *   3. printBitmap()      — Sunmi SDK v2 bitmap API  (newer firmware)
+ *
+ * PAPER FEED / CUT STRATEGY:
+ *   lineWrap() and cutPaper() are each wrapped in their own try-catch.
+ *   Many Sunmi handheld models (V2, L2, D2 mini…) have no paper cutter
+ *   and throw "this model does not support this method!" for those calls.
+ *   If they fail we silently skip them — the badge still prints correctly.
+ *
+ * CALLBACK CONTRACT:
+ *   Kotlin reports the real result back into JS via evaluateJavascript:
+ *     window.__onPrintDone(success: Boolean, errorMessage: String)
+ *   JS only shows "success" when Kotlin has confirmed the print completed.
+ */
 class SunmiPrinterBridge(
     private val context: Context,
+    private val webView: WebView,
     private val serviceProvider: () -> SunmiPrinterService?
 ) {
     companion object {
         private const val TAG = "SunmiPrinterBridge"
-        // Sunmi 80mm thermal printer: 576 printable dots (203 DPI × 72mm printable width)
-        private const val PRINTABLE_WIDTH_DOTS = 576
-        // 38% of printable width → compact QR, clean margins, fully scannable
-        private const val QR_PAPER_WIDTH_RATIO = 0.38
-        private const val QR_MODULE_SIZE_MIN = 3
-        private const val QR_MODULE_SIZE_MAX = 5
     }
 
-    /**
-     * Estimates the number of QR modules (cells) based on data length.
-     * Corresponds to QR versions 3–7 covering typical URL lengths.
-     */
-    private fun estimateQrModuleCount(data: String): Int {
-        return when {
-            data.length <= 32  -> 29  // Version 3
-            data.length <= 53  -> 33  // Version 4
-            data.length <= 78  -> 37  // Version 5
-            data.length <= 106 -> 41  // Version 6
-            else               -> 45  // Version 7
+    // ── JS callback helpers ───────────────────────────────────────────────────
+
+    private fun reportSuccess() {
+        (context as? Activity)?.runOnUiThread {
+            webView.evaluateJavascript(
+                "if(typeof window.__onPrintDone==='function') window.__onPrintDone(true,'');",
+                null
+            )
         }
     }
 
-    /**
-     * Calculates the optimal module size so the QR fills [QR_PAPER_WIDTH_RATIO]
-     * of the printable width while remaining fully scannable.
-     */
-    private fun getQrModuleSizeForPaper(data: String): Int {
-        val targetDots = (PRINTABLE_WIDTH_DOTS * QR_PAPER_WIDTH_RATIO).toInt()
-        val moduleSize = targetDots / estimateQrModuleCount(data)
-        return moduleSize.coerceIn(QR_MODULE_SIZE_MIN, QR_MODULE_SIZE_MAX)
+    private fun reportError(message: String) {
+        val safe = message.replace("\\", "\\\\").replace("'", "\\'")
+        (context as? Activity)?.runOnUiThread {
+            webView.evaluateJavascript(
+                "if(typeof window.__onPrintDone==='function') window.__onPrintDone(false,'$safe');",
+                null
+            )
+        }
     }
 
-    /**
-     * Prints a QR code and cuts the paper in a single atomic AIDL call sequence.
-     *
-     * WHY ATOMIC: Calling printQR() + cutPaper() as two separate JS bridge calls
-     * creates a race between two independent AIDL transactions. The line feeds in
-     * cutPaper() then add non-deterministic offset before the next printerInit(),
-     * causing the QR position to drift lower with every successive print job.
-     *
-     * By combining print + cut into ONE function, all commands execute in one
-     * locked sequence with no inter-call state bleed — position is identical
-     * on every single receipt.
-     */
+    // ── Primary print method ─────────────────────────────────────────────────
+
     @JavascriptInterface
-    fun printQRAndCut(qrData: String) {
+    fun printBitmapAndCut(base64Png: String) {
+        Log.d(TAG, "printBitmapAndCut — base64 length: ${base64Png.length} chars")
+
         val printerService = serviceProvider()
         if (printerService == null) {
-            showToast("Printer service not bound yet")
-            Log.e(TAG, "printQRAndCut failed: printer service is null")
+            val msg = "Printer service not connected. Is the Sunmi printer running?"
+            Log.e(TAG, msg)
+            showToast(msg)
+            reportError(msg)
             return
         }
+
         try {
-            Log.d(TAG, "printQRAndCut — QR length: ${qrData.length} chars")
+            // ── 1. Decode the PNG that html2canvas rendered ───────────────────
+            val pngBytes = Base64.decode(base64Png, Base64.DEFAULT)
+            val bitmap   = BitmapFactory.decodeByteArray(pngBytes, 0, pngBytes.size)
+                ?: throw IllegalStateException(
+                    "BitmapFactory returned null — base64 length was ${base64Png.length}"
+                )
+            Log.d(TAG, "Bitmap decoded: ${bitmap.width} × ${bitmap.height} px")
 
-            // 1. Hard reset: clears all formatting, alignment, and buffered state
-            printerService.printerInit(null)
+            // Build ESC/POS bytes now (needed for method 1; harmless if unused)
+            val escPosBytes = bitmapToEscPosRaster(bitmap)
+            Log.d(TAG, "ESC/POS raster: ${escPosBytes.size} bytes")
 
-            // 2. Center alignment — applied immediately after reset
-            printerService.setAlignment(1, null)
+            // ── 2. Hard reset ─────────────────────────────────────────────────
+            try {
+                printerService.printerInit(null)
+            } catch (e: Exception) {
+                Log.w(TAG, "printerInit failed (non-fatal): ${e.message}")
+            }
 
-            // 3. Print the QR code — no lineWrap before it so position is always
-            //    flush with the paper-top after printerInit, giving consistent output
-            val moduleSize = getQrModuleSizeForPaper(qrData)
-            Log.d(TAG, "QR module size: $moduleSize dots/cell")
-            printerService.printQRCode(qrData, moduleSize, 2, null)
+            // ── 3. Try to print — three methods, first one that works wins ────
+            var printed     = false
+            val methodErrors = mutableListOf<String>()
 
-            // 4. Feed exactly 3 lines to push the QR past the print head/cutter,
-            //    then cut — all in the same atomic sequence as the print above
-            printerService.lineWrap(1, null)
-            printerService.cutPaper(null)
+            // Method A: sendRAWData with ESC/POS GS v 0 raster
+            if (!printed) {
+                try {
+                    printerService.sendRAWData(escPosBytes, null)
+                    printed = true
+                    Log.d(TAG, "sendRAWData succeeded")
+                } catch (e: Exception) {
+                    methodErrors += "sendRAWData: ${e.message}"
+                    Log.w(TAG, "sendRAWData failed: ${e.message}")
+                }
+            }
 
-            Log.d(TAG, "printQRAndCut complete")
+            // Method B: printBitmapCustom (Sunmi SDK v1)
+            if (!printed) {
+                try {
+                    printerService.printBitmapCustom(bitmap, 0, null)
+                    printed = true
+                    Log.d(TAG, "printBitmapCustom succeeded")
+                } catch (e: Exception) {
+                    methodErrors += "printBitmapCustom: ${e.message}"
+                    Log.w(TAG, "printBitmapCustom failed: ${e.message}")
+                }
+            }
+
+            // Method C: printBitmap (Sunmi SDK v2)
+            if (!printed) {
+                try {
+                    printerService.printBitmap(bitmap, null)
+                    printed = true
+                    Log.d(TAG, "printBitmap succeeded")
+                } catch (e: Exception) {
+                    methodErrors += "printBitmap: ${e.message}"
+                    Log.w(TAG, "printBitmap failed: ${e.message}")
+                }
+            }
+
+            bitmap.recycle()
+
+            if (!printed) {
+                val allErrors = methodErrors.joinToString(" | ")
+                reportError("No print method succeeded on this device. Tried: $allErrors")
+                return
+            }
+
+            // ── 4. Feed + cut — non-fatal (handheld models have no cutter) ───
+            try {
+                printerService.lineWrap(1, null)
+                Log.d(TAG, "lineWrap OK")
+            } catch (e: Exception) {
+                Log.w(TAG, "lineWrap not supported on this model (non-fatal): ${e.message}")
+            }
+
+            try {
+                printerService.cutPaper(null)
+                Log.d(TAG, "cutPaper OK")
+            } catch (e: Exception) {
+                Log.w(TAG, "cutPaper not supported on this model (non-fatal): ${e.message}")
+            }
+
+            Log.d(TAG, "printBitmapAndCut complete — notifying JS")
+            reportSuccess()
+
         } catch (e: Exception) {
-            Log.e(TAG, "Error in printQRAndCut", e)
-            showToast("Print Error: ${e.message}")
+            val msg = "Print failed: ${e.message ?: e.javaClass.simpleName}"
+            Log.e(TAG, "Unexpected error in printBitmapAndCut", e)
+            showToast(msg)
+            reportError(msg)
         }
     }
 
-    // ── Legacy individual functions kept for backward compatibility ───────────
+    // ── ESC/POS GS v 0 raster conversion ────────────────────────────────────
+
+    /**
+     * Converts an Android [Bitmap] to an ESC/POS GS v 0 raster command.
+     *
+     *   1D 76 30 00  xL xH  yL yH  [row data...]
+     *
+     * Each row byte: MSB = leftmost pixel, bit=1 → print dot.
+     * Luminance threshold 128 for clean monochrome output.
+     */
+    private fun bitmapToEscPosRaster(bitmap: Bitmap): ByteArray {
+        val width       = bitmap.width
+        val height      = bitmap.height
+        val bytesPerRow = (width + 7) / 8
+
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        val out = ByteArrayOutputStream(8 + bytesPerRow * height)
+
+        out.write(0x1D); out.write(0x76); out.write(0x30); out.write(0x00)
+        out.write(bytesPerRow and 0xFF);         out.write((bytesPerRow shr 8) and 0xFF)
+        out.write(height and 0xFF);              out.write((height shr 8) and 0xFF)
+
+        for (y in 0 until height) {
+            val row = ByteArray(bytesPerRow)
+            for (x in 0 until width) {
+                val px  = pixels[y * width + x]
+                val lum = (0.299 * ((px shr 16) and 0xFF) +
+                           0.587 * ((px shr  8) and 0xFF) +
+                           0.114 * ( px          and 0xFF)).toInt()
+                if (lum < 128) row[x / 8] = (row[x / 8].toInt() or (0x80 ushr (x % 8))).toByte()
+            }
+            out.write(row)
+        }
+        return out.toByteArray()
+    }
+
+    // ── Legacy / compatibility stubs ─────────────────────────────────────────
+
+    @Suppress("UNUSED_PARAMETER")
+    @JavascriptInterface
+    fun printBadgeAndCut(visitorName: String, employeeId: String, qrData: String) {
+        Log.w(TAG, "printBadgeAndCut() deprecated — use printBitmapAndCut(). No-op.")
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    @JavascriptInterface
+    fun printQRAndCut(qrData: String) {
+        Log.w(TAG, "printQRAndCut() deprecated — use printBitmapAndCut(). No-op.")
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    @JavascriptInterface
+    fun printQR(qrData: String) {
+        Log.w(TAG, "printQR() deprecated — use printBitmapAndCut(). No-op.")
+    }
 
     @JavascriptInterface
     fun printText(text: String) {
-        val printerService = serviceProvider()
-        if (printerService == null) {
+        val printerService = serviceProvider() ?: run {
             showToast("Printer service not bound yet")
             Log.e(TAG, "printText failed: printer service is null")
             return
@@ -113,24 +246,15 @@ class SunmiPrinterBridge(
     }
 
     @JavascriptInterface
-    fun printQR(qrData: String) {
-        // Delegates to the atomic combined function.
-        // Kept for compatibility; JS should call printQRAndCut() directly.
-        printQRAndCut(qrData)
+    fun cutPaper() {
+        Log.d(TAG, "cutPaper() — cut handled atomically inside printBitmapAndCut().")
     }
 
-    @JavascriptInterface
-    fun cutPaper() {
-        // No-op when called after printQRAndCut() — the cut already happened.
-        // Kept so existing JS calls don't throw a "method not found" error.
-        Log.d(TAG, "cutPaper() called — cut was already handled by printQRAndCut()")
-    }
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun showToast(message: String) {
-        if (context is Activity) {
-            context.runOnUiThread {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            }
+        (context as? Activity)?.runOnUiThread {
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
 }

@@ -146,7 +146,16 @@ export default function Scanner({ visitorId, onBack }) {
       }
 
       try {
-        const list = await updateCameraList();
+        // 2. Use navigator.mediaDevices.enumerateDevices() to list all available video input devices.
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        // 3. Filter only kind === 'videoinput'
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        setCameras(videoDevices || []);
+
+        // 7. Add console logs for: all detected camera labels
+        const allLabels = videoDevices.map(d => d.label || 'no-label');
+        console.log("All detected camera labels:", allLabels);
+        console.log("All detected cameras raw:", videoDevices.map(d => ({ label: d.label, deviceId: d.deviceId })));
 
         const config = {
           fps: 15,
@@ -184,58 +193,112 @@ export default function Scanner({ visitorId, onBack }) {
           processCheckIn(id);
         };
 
-        // Determine which camera to use
-        let selectedCameraId = activeCameraId;
+        // Determine which camera deviceId to use
+        let selectedDeviceId = activeCameraId;
+        let selectedLabel = '';
 
-        // If no camera ID is set on desktop, choose a sensible default from the list.
-        // On mobile, facingMode below gives a more reliable front/back switch.
-        const prefersFacingMode = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (!selectedCameraId && !prefersFacingMode && list && list.length > 0) {
-          const backCamera = list.find(cam => {
-            const label = cam.label.toLowerCase();
+        if (!selectedDeviceId && videoDevices.length > 0) {
+          // 4. Detect the most likely rear / front camera
+          const rearCamera = videoDevices.find(device => {
+            const label = (device.label || '').toLowerCase();
             return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('facing 1') || label.includes('camera 2');
           });
-          selectedCameraId = backCamera ? backCamera.id : list[0].id;
-          setActiveCameraId(selectedCameraId);
+
+          const frontCamera = videoDevices.find(device => {
+            const label = (device.label || '').toLowerCase();
+            return label.includes('front') || label.includes('user') || label.includes('facing 0') || label.includes('forward');
+          });
+
+          // 5. If multiple cameras exist: prefer the target camera, otherwise fallback to the first camera
+          if (activeFacingMode === 'environment') {
+            const matched = rearCamera || videoDevices[0];
+            selectedDeviceId = matched.deviceId;
+            selectedLabel = matched.label || '';
+          } else {
+            const matched = frontCamera || videoDevices[0];
+            selectedDeviceId = matched.deviceId;
+            selectedLabel = matched.label || '';
+          }
+        } else if (selectedDeviceId) {
+          const matched = videoDevices.find(d => d.deviceId === selectedDeviceId);
+          selectedLabel = matched ? (matched.label || '') : '';
         }
 
-        // Start scanning
-        if (selectedCameraId) {
-          console.log(`Starting camera ID: ${selectedCameraId}`);
-          await html5QrCode.start(selectedCameraId, config, successCallback, () => {});
-          await applyCameraZoom();
-          // Query camera list again now that permission is granted, so we get labels and all available cameras
-          const refreshedList = await updateCameraList();
-          if (refreshedList && refreshedList.length > 0 && !activeCameraId) {
-            const backCamera = refreshedList.find(cam => {
-              const label = cam.label.toLowerCase();
-              return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('facing 1') || label.includes('camera 2');
-            });
-            setActiveCameraId(backCamera ? backCamera.id : refreshedList[0].id);
+        // 7. Add console logs for: selected deviceId, selected camera label
+        console.log("Selected deviceId:", selectedDeviceId);
+        console.log("Selected camera label:", selectedLabel);
+
+        // 6. Pass the selected camera using exact deviceId into the QR scanner library configuration
+        if (selectedDeviceId) {
+          console.log(`Starting camera with exact deviceId: ${selectedDeviceId} (${selectedLabel})`);
+          try {
+            await html5QrCode.start(
+              { deviceId: { exact: selectedDeviceId } },
+              config,
+              successCallback,
+              () => {}
+            );
+            await applyCameraZoom();
+          } catch (exactErr) {
+            console.warn("Failed to start with exact deviceId constraint, trying deviceId as string string", exactErr);
+            try {
+              await html5QrCode.start(selectedDeviceId, config, successCallback, () => {});
+              await applyCameraZoom();
+            } catch (stringErr) {
+              console.warn("Failed to start with deviceId string, falling back to facingMode", stringErr);
+              // Final fallback to keep Android and other browsers fully compatible
+              await html5QrCode.start(
+                { facingMode: { exact: activeFacingMode } },
+                config,
+                successCallback,
+                () => {}
+              );
+              await applyCameraZoom();
+            }
           }
         } else {
-          // Mobile browsers switch front/back more reliably with facingMode than device IDs.
-          console.log(`Starting camera facingMode: ${activeFacingMode}`);
-          try {
-            await html5QrCode.start({ facingMode: { exact: activeFacingMode } }, config, successCallback, () => {});
-            await applyCameraZoom();
-            const refreshedList = await updateCameraList();
-            if (!prefersFacingMode && refreshedList && refreshedList.length > 0) {
-              const backCamera = refreshedList.find(cam => {
-                const label = cam.label.toLowerCase();
-                return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('facing 1') || label.includes('camera 2');
-              });
-              setActiveCameraId(backCamera ? backCamera.id : refreshedList[0].id);
+          // Fallback if no device list was available yet (e.g. before permissions are granted)
+          console.log(`No device ID determined yet. Starting with facingMode: ${activeFacingMode}`);
+          await html5QrCode.start(
+            { facingMode: { exact: activeFacingMode } },
+            config,
+            successCallback,
+            () => {}
+          );
+          await applyCameraZoom();
+        }
+
+        // Query devices again now that permission is granted so we get populated labels and full device list
+        const refreshedDevices = await navigator.mediaDevices.enumerateDevices();
+        const refreshedList = refreshedDevices.filter(d => d.kind === 'videoinput');
+        setCameras(refreshedList || []);
+
+        // If activeCameraId was not set (e.g. initial start on a fresh permission prompt),
+        // we determine if there is a better matching camera in the newly resolved list and auto-promote to it.
+        if (refreshedList && refreshedList.length > 0 && !activeCameraId) {
+          const rearCamera = refreshedList.find(cam => {
+            const label = (cam.label || '').toLowerCase();
+            return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('facing 1') || label.includes('camera 2');
+          });
+
+          const frontCamera = refreshedList.find(cam => {
+            const label = (cam.label || '').toLowerCase();
+            return label.includes('front') || label.includes('user') || label.includes('facing 0') || label.includes('forward');
+          });
+
+          if (activeFacingMode === 'environment') {
+            if (rearCamera && rearCamera.deviceId !== selectedDeviceId) {
+              console.log(`Auto-switching to detected rear camera: ${rearCamera.label}`);
+              setActiveCameraId(rearCamera.deviceId);
+            } else {
+              setActiveCameraId(selectedDeviceId || refreshedList[0].deviceId);
             }
-          } catch (envErr) {
-            const fallbackFacingMode = activeFacingMode === 'environment' ? 'user' : 'environment';
-            console.warn(`facingMode exact ${activeFacingMode} failed, falling back to exact ${fallbackFacingMode}`, envErr);
-            await html5QrCode.start({ facingMode: { exact: fallbackFacingMode } }, config, successCallback, () => {});
-            setActiveFacingMode(fallbackFacingMode);
-            await applyCameraZoom();
-            const refreshedList = await updateCameraList();
-            if (!prefersFacingMode && refreshedList && refreshedList.length > 0) {
-              setActiveCameraId(refreshedList[0].id);
+          } else {
+            if (frontCamera && frontCamera.deviceId !== selectedDeviceId) {
+              console.log(`Auto-switching to detected front camera: ${frontCamera.label}`);
+              setActiveCameraId(frontCamera.deviceId);
+            } else {
+              setActiveCameraId(selectedDeviceId || refreshedList[0].deviceId);
             }
           }
         }

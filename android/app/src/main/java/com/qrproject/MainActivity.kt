@@ -96,9 +96,11 @@ class MainActivity : AppCompatActivity() {
         webSettings.loadWithOverviewMode = true
         webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-        // Expose JavaScript Interface
+        // Expose JavaScript Interface.
+        // The WebView reference lets the bridge call evaluateJavascript() to
+        // report real success / failure back to JS after printing completes.
         binding.webView.addJavascriptInterface(
-            SunmiPrinterBridge(this) { sunmiPrinterService },
+            SunmiPrinterBridge(this, binding.webView) { sunmiPrinterService },
             "Android"
         )
 

@@ -443,7 +443,7 @@ h1 {
   width: 100%;
   height: 100%;
   border: 1px solid rgba(16, 185, 129, 0.34);
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: inset 0 0 28px rgba(16, 185, 129, 0.12);
   overflow: hidden;
 }
@@ -977,14 +977,14 @@ h1 {
 /* Fullscreen scanner camera surface */
 .scanner-scan-layout #reader {
   position: relative;
-  width: min(92vw, calc(100dvh - 15.5rem), 780px);
+  width: min(85vw, calc(100dvh - 18rem), 480px);
   height: auto;
   max-width: none;
   aspect-ratio: 1 / 1;
-  border-radius: 0;
+  border-radius: 12px;
   overflow: hidden;
-  border: none;
-  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   z-index: 2;
   grid-area: camera;
 }
@@ -993,8 +993,10 @@ h1 {
   grid-area: camera;
   position: relative;
   z-index: 10;
-  align-self: stretch;
-  justify-self: stretch;
+  align-self: center;
+  justify-self: center;
+  width: min(85vw, calc(100dvh - 18rem), 480px);
+  aspect-ratio: 1 / 1;
 }
 
 .scanner-scan-layout .camera-switch-btn {
@@ -1006,6 +1008,7 @@ h1 {
   justify-self: center;
   transform: none;
   margin-bottom: 1rem;
+  z-index: 15;
 }
 
 .scanner-scan-layout .camera-switch-btn:hover {
@@ -1034,7 +1037,10 @@ h1 {
     margin-bottom: 0.75rem;
   }
   .scanner-scan-layout #reader {
-    width: min(94vw, calc(100dvh - 14.75rem));
+    width: min(85vw, calc(100dvh - 17rem), 380px);
+  }
+  .scanner-scan-layout .scanner-viewfinder-overlay {
+    width: min(85vw, calc(100dvh - 17rem), 380px);
   }
   .scanner-top-bar {
     padding: 1rem 1.25rem;
@@ -1054,7 +1060,10 @@ h1 {
     margin-bottom: 0.65rem;
   }
   .scanner-scan-layout #reader {
-    width: min(94vw, calc(100dvh - 14rem));
+    width: min(85vw, calc(100dvh - 16rem), 300px);
+  }
+  .scanner-scan-layout .scanner-viewfinder-overlay {
+    width: min(85vw, calc(100dvh - 16rem), 300px);
   }
 }
 

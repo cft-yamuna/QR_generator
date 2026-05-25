@@ -1,7 +1,7 @@
 [
   {
     "id": "VIS-1001",
-    "name": "Nevin Thomas",
+    "name": "Nevin",
     "employeeId": "EMP-001",
     "checkinStatus": "Pending",
     "checkedInAt": null,
@@ -9,25 +9,25 @@
   },
   {
     "id": "VIS-1002",
-    "name": "Priya Patel",
+    "name": "Yamuna",
     "employeeId": "EMP-002",
-    "checkinStatus": "Pending",
-    "checkedInAt": null,
+    "checkinStatus": "Checked In",
+    "checkedInAt": "2026-05-25T11:19:52.551Z",
     "createdAt": "2026-05-21T07:01:00.000Z"
   },
   {
     "id": "VIS-1003",
-    "name": "Arjun Sharma",
+    "name": "Chethan",
     "employeeId": "EMP-003",
     "checkinStatus": "Checked In",
     "checkedInAt": "2026-05-22T03:48:54.775Z",
     "createdAt": "2026-05-21T07:02:00.000Z",
     "gateScanned": true,
-    "gateScannedAt": "2026-05-23T12:07:46.110Z"
+    "gateScannedAt": "2026-05-25T11:28:17.128Z"
   },
   {
     "id": "VIS-1004",
-    "name": "Rohan Mehta",
+    "name": "Abhilash",
     "employeeId": "EMP-004",
     "checkinStatus": "Pending",
     "checkedInAt": null,
@@ -105,7 +105,7 @@
     "checkedInAt": "2026-05-22T03:55:27.676Z",
     "createdAt": "2026-05-22T03:50:59.172Z",
     "gateScanned": true,
-    "gateScannedAt": "2026-05-23T14:00:53.260Z"
+    "gateScannedAt": "2026-05-23T09:40:15.289Z"
   },
   {
     "id": "VIS-1014",
@@ -131,17 +131,6 @@
     "checkedInAt": "2026-05-23T09:29:39.903Z",
     "createdAt": "2026-05-23T09:29:39.905Z",
     "gateScanned": true,
-    "gateScannedAt": "2026-05-23T10:01:41.297Z"
-  },
-  {
-    "id": "VIS-1017",
-    "name": "Yamuna",
-    "employeeId": "1234",
-    "email": "yamuna@craftech360.com",
-    "checkinStatus": "Checked In",
-    "checkedInAt": "2026-05-23T12:13:34.271Z",
-    "createdAt": "2026-05-23T12:13:34.272Z",
-    "gateScanned": true,
-    "gateScannedAt": "2026-05-23T13:03:18.991Z"
+    "gateScannedAt": "2026-05-23T09:31:48.615Z"
   }
 ]
