@@ -82,7 +82,7 @@ class SunmiPrinterBridge(
 
             // 4. Feed exactly 3 lines to push the QR past the print head/cutter,
             //    then cut — all in the same atomic sequence as the print above
-            printerService.lineWrap(3, null)
+            printerService.lineWrap(1, null)
             printerService.cutPaper(null)
 
             Log.d(TAG, "printQRAndCut complete")

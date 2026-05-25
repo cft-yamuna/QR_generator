@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         private const val PREFS_NAME = "QRProjectPrefs"
         private const val KEY_SERVER_URL = "serverUrl"
-        private const val DEFAULT_URL = "https://192.168.0.65:5173/"
+        private const val DEFAULT_URL = "https://192.168.0.116:5173/"
     }
 
     private lateinit var binding: ActivityMainBinding
